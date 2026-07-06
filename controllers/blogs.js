@@ -41,7 +41,6 @@ blogsRouter.put("/:id", blogFinder, async (req, res, next) => {
     res.status(200).json(req.blog);
   } catch (error) {
     next(error);
-    // res.status(400).json({ error: error.message });
   }
 });
 
