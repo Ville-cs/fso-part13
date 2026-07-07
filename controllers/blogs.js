@@ -1,10 +1,14 @@
 const blogsRouter = require("express").Router();
-const Blog = require("../models/blog");
+const { Blog, User } = require("../models");
 const { blogFinder, userExtractor } = require("../util/middleware");
 
 blogsRouter.get("/", async (_req, res) => {
   try {
-    const blogs = await Blog.findAll();
+    const blogs = await Blog.findAll({
+      include: {
+        model: User,
+      },
+    });
     res.status(200).json(blogs);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -25,7 +29,11 @@ blogsRouter.post("/", userExtractor, async (req, res, next) => {
   }
 });
 
-blogsRouter.delete("/:id", blogFinder, async (req, res) => {
+blogsRouter.delete("/:id", blogFinder, userExtractor, async (req, res) => {
+  const user = req.user;
+  if (req.blog.userId !== user.id) {
+    return res.status(401).json({ error: "invalid user" });
+  }
   try {
     await req.blog.destroy();
     res.status(204).end();
