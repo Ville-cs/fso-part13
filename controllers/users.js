@@ -7,11 +7,11 @@ usersRouter.get("/", async (req, res) => {
   res.json(users);
 });
 
-usersRouter.post("/", async (request, response) => {
-  const { username, name, password } = request.body;
+usersRouter.post("/", async (req, res, next) => {
+  const { username, name, password } = req.body;
 
   if (password.length < 3 || username.length < 3) {
-    return response
+    return res
       .status(400)
       .json({
         error: "username and password must be at least 3 characters long",
@@ -27,8 +27,12 @@ usersRouter.post("/", async (request, response) => {
     name,
     passwordHash,
   });
-  const savedUser = await user.save();
-  response.status(201).json(savedUser);
+  try {
+    const savedUser = await user.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    next(error);
+  }
 });
 
 usersRouter.get("/:id", async (req, res) => {
@@ -57,6 +61,9 @@ usersRouter.put("/:username", async (req, res, next) => {
         username: req.params.username,
       },
     });
+    if (!user) {
+      return res.status(404).json({ error: "user does not exist" });
+    }
     user.username = req.body.username;
     await user.save();
     res.status(200).json(user);

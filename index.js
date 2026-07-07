@@ -1,4 +1,5 @@
 const express = require("express");
+const middleware = require("./util/middleware");
 const app = express();
 
 const { PORT } = require("./util/config");
@@ -11,6 +12,8 @@ const loginRouter = require("./controllers/login");
 const { unknownEndpoint, errorHandler } = require("./util/middleware");
 
 app.use(express.json());
+app.use(middleware.tokenExtractor);
+
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/login", loginRouter);

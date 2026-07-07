@@ -1,4 +1,25 @@
 const Blog = require("../models/blog");
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+
+const tokenExtractor = (req, res, next) => {
+  console.log(req);
+  const authorization = req.get("authorization");
+  if (authorization && authorization.startsWith("Bearer ")) {
+    req.token = authorization.replace("Bearer ", "");
+  }
+  next();
+};
+
+const userExtractor = async (req, res, next) => {
+  if (!req.token) return res.status(401).json({ error: "token missing" });
+  const decodedToken = jwt.verify(req.token, process.env.SECRET);
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: "token invalid" });
+  }
+  req.user = await User.findByPk(decodedToken.id);
+  next();
+};
 
 const blogFinder = async (req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id);
@@ -13,14 +34,19 @@ const unknownEndpoint = (_req, res) => {
 };
 
 const errorHandler = (error, _req, res, next) => {
-  if (error.name === "CastError") {
-    return res.status(400).send({ error: "malformatted id" });
-  } else if (error.name === "SequelizeValidationError") {
-    return res.status(400).json({ error: error.message });
+  if (error.name === "SequelizeValidationError") {
+    if (error.errors[0].validatorName === "isEmail") {
+      return res
+        .status(400)
+        .json({ error: "username must be a valid email address" });
+    }
+    return res.status(400).json({ error: error });
   } else if (error.name === "SequelizeDatabaseError") {
     return res.status(400).json({ error: error.message });
-  } else if (error.name === " UniqueConstraintError") {
+  } else if (error.name === "UniqueConstraintError") {
     return res.status(400).json({ error: error.message });
+  } else if (error.name === "SequelizeUniqueConstraintError") {
+    return res.status(400).json({ error: error.errors[0].message });
   } else {
     console.log(error);
 
@@ -31,6 +57,8 @@ const errorHandler = (error, _req, res, next) => {
 };
 
 module.exports = {
+  tokenExtractor,
+  userExtractor,
   blogFinder,
   unknownEndpoint,
   errorHandler,
