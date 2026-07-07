@@ -3,7 +3,6 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
 const tokenExtractor = (req, res, next) => {
-  console.log(req);
   const authorization = req.get("authorization");
   if (authorization && authorization.startsWith("Bearer ")) {
     req.token = authorization.replace("Bearer ", "");
