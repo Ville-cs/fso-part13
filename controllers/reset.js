@@ -1,5 +1,4 @@
 const resetRouter = require("express").Router();
-const { sequelize } = require("../util/db");
 const { Blog, User } = require("../models");
 
 resetRouter.post("/", async (_req, res) => {
