@@ -2,7 +2,7 @@ const Blog = require("../models/blog");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
-const tokenExtractor = (req, res, next) => {
+const tokenExtractor = (req, _res, next) => {
   const authorization = req.get("authorization");
   if (authorization && authorization.startsWith("Bearer ")) {
     req.token = authorization.replace("Bearer ", "");
@@ -38,6 +38,12 @@ const errorHandler = (error, _req, res, next) => {
       return res
         .status(400)
         .json({ error: "username must be a valid email address" });
+    } else if (error.errors[0].path === "year") {
+      console.log("year error: ", error.errors[0]);
+
+      return res
+        .status(400)
+        .json({ error: "year must be between 1991 and current year" });
     }
     return res.status(400).json({ error: error });
   } else if (error.name === "SequelizeDatabaseError") {
