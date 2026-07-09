@@ -33,20 +33,19 @@ const unknownEndpoint = (_req, res) => {
 };
 
 const errorHandler = (error, _req, res, next) => {
-  const err = error.errors[0];
   if (error.name === "SequelizeValidationError") {
-    if (err.validatorName === "isEmail") {
+    if (error.errors[0].validatorName === "isEmail") {
       return res
         .status(400)
         .json({ error: "username must be a valid email address" });
-    } else if (err.path === "year") {
+    } else if (error.errors[0].path === "year") {
       return res
         .status(400)
         .json({ error: "year must be between 1991 and current year" });
-    } else if (err.message.includes("cannot be null")) {
+    } else if (error.errors[0].message.includes("cannot be null")) {
       return res
         .status(400)
-        .json({ error: `column ${err.path} cannot be null` });
+        .json({ error: `column ${error.errors[0].path} cannot be null` });
     }
     return res.status(400).json({ error: error });
   } else if (error.name === "SequelizeDatabaseError") {
@@ -54,7 +53,7 @@ const errorHandler = (error, _req, res, next) => {
   } else if (error.name === "UniqueConstraintError") {
     return res.status(400).json({ error: error.message });
   } else if (error.name === "SequelizeUniqueConstraintError") {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: error.errors[0].message });
   } else {
     console.log(error);
 

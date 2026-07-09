@@ -25,7 +25,7 @@ BlogsReadingLists.init(
     sequelize,
     underscored: true,
     timestamps: false,
-    modelName: "blog_reading_list",
+    modelName: "blogs_reading_list",
   },
 );
 
