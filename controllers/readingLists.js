@@ -1,6 +1,7 @@
 const readingListRouter = require("express").Router();
 const { ReadingList, BlogsReadingLists } = require("../models");
 const { sequelize } = require("../util/db");
+const { userExtractor } = require("../util/middleware");
 
 readingListRouter.post("/", async (req, res, next) => {
   const body = req.body;
@@ -23,6 +24,21 @@ readingListRouter.post("/", async (req, res, next) => {
     res.status(201).json(readingList);
   } catch (error) {
     await t.rollback();
+    next(error);
+  }
+});
+
+readingListRouter.put("/:id", userExtractor, async (req, res, next) => {
+  const user = req.user;
+  try {
+    const readingList = await ReadingList.findByPk(req.params.id);
+    if (readingList.userId !== user.id) {
+      return res.status(401).json({ error: "invalid user" });
+    }
+    readingList.read = req.body.read;
+    await readingList.save();
+    res.status(200).json(readingList);
+  } catch (error) {
     next(error);
   }
 });
