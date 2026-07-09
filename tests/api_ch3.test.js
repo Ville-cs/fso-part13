@@ -38,6 +38,7 @@ describe("Blogs API", () => {
     assert.strictEqual(response.data.author, newBlog.author);
     assert.strictEqual(response.data.url, newBlog.url);
     assert.strictEqual(response.data.likes, 0);
+    assert.strictEqual(response.data.year, 2005);
   });
 
   it("created blog appears in blogs list", async () => {
