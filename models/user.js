@@ -33,11 +33,6 @@ User.init(
     underscored: true,
     timestamps: true,
     modelName: "user",
-    defaultScope: {
-      attributes: {
-        exclude: ["passwordHash"],
-      },
-    },
   },
 );
 
