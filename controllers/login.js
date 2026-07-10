@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const loginRouter = require("express").Router();
 const { SECRET } = require("../util/config");
-const { User } = require("../models");
+const { User, Session } = require("../models");
 
-loginRouter.post("/", async (req, res) => {
+loginRouter.post("/", async (req, res, next) => {
   const body = req.body;
 
   const user = await User.findOne({
@@ -22,6 +22,11 @@ loginRouter.post("/", async (req, res) => {
       error: "invalid username or password",
     });
   }
+  if (user.disabled === true) {
+    return res.status(401).json({
+      error: "your account has been disabled",
+    });
+  }
 
   const userForToken = {
     username: user.username,
@@ -30,7 +35,15 @@ loginRouter.post("/", async (req, res) => {
 
   const token = jwt.sign(userForToken, SECRET);
 
-  res.status(200).send({ token, username: user.username, name: user.name });
+  try {
+    await Session.create({
+      token: token,
+      userId: user.id,
+    });
+    res.status(200).send({ token, username: user.username, name: user.name });
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = loginRouter;
