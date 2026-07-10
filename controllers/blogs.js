@@ -1,5 +1,5 @@
 const blogsRouter = require("express").Router();
-const { Blog, User, Session } = require("../models");
+const { Blog, User } = require("../models");
 const {
   blogFinder,
   userExtractor,
