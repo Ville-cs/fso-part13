@@ -1,5 +1,4 @@
-const Blog = require("../models/blog");
-const User = require("../models/user");
+const { Blog, User, Session } = require("../models");
 const jwt = require("jsonwebtoken");
 
 const tokenExtractor = (req, _res, next) => {
@@ -12,11 +11,33 @@ const tokenExtractor = (req, _res, next) => {
 
 const userExtractor = async (req, res, next) => {
   if (!req.token) return res.status(401).json({ error: "token missing" });
-  const decodedToken = jwt.verify(req.token, process.env.SECRET);
-  if (!decodedToken.id) {
-    return res.status(401).json({ error: "token invalid" });
+  try {
+    const decodedToken = jwt.verify(req.token, process.env.SECRET);
+    if (!decodedToken.id) {
+      return res.status(401).json({ error: "token invalid" });
+    }
+    req.user = await User.findByPk(decodedToken.id);
+    if (!req.user) {
+      return res.status(404).json({ error: "user not found, login again" });
+    }
+  } catch (error) {
+    next(error);
   }
-  req.user = await User.findByPk(decodedToken.id);
+  next();
+};
+
+const sessionExtractor = async (req, res, next) => {
+  const session = await Session.findOne({
+    where: {
+      token: req.token,
+    },
+  });
+  if (req.user.disabled === true) {
+    return res.status(401).json({ error: "your account has been disabled" });
+  } else if (!session) {
+    return res.status(401).json({ error: "you need to login first" });
+  }
+  req.session = session;
   next();
 };
 
@@ -54,9 +75,10 @@ const errorHandler = (error, _req, res, next) => {
     return res.status(400).json({ error: error.message });
   } else if (error.name === "SequelizeUniqueConstraintError") {
     return res.status(400).json({ error: error.errors[0].message });
+  } else if (error.name === "JsonWebTokenError") {
+    return res.status(400).json({ error: "invalid token" });
   } else {
     console.log(error);
-
     return res.status(400).json({ error: "unknown error" });
   }
 
@@ -66,6 +88,7 @@ const errorHandler = (error, _req, res, next) => {
 module.exports = {
   tokenExtractor,
   userExtractor,
+  sessionExtractor,
   blogFinder,
   unknownEndpoint,
   errorHandler,
