@@ -51,9 +51,17 @@ describe("Blogs API", () => {
     const blogsResponse = await axios.get(`${baseUrl}/blogs`);
     const blogId = blogsResponse.data[0].id;
 
-    const response = await axios.put(`${baseUrl}/blogs/${blogId}`, {
-      likes: 5,
-    });
+    const response = await axios.put(
+      `${baseUrl}/blogs/${blogId}`,
+      {
+        likes: 5,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${testData.tokens[0]}`,
+        },
+      },
+    );
 
     assert.ok([200, 201].includes(response.status));
     assert.strictEqual(response.data.likes, 5);
