@@ -1,5 +1,5 @@
 const blogsRouter = require("express").Router();
-const { Blog, User } = require("../models");
+const { Blog, User, Session } = require("../models");
 const { blogFinder, userExtractor } = require("../util/middleware");
 const { Op } = require("sequelize");
 
@@ -40,8 +40,18 @@ blogsRouter.get("/:id", blogFinder, async (req, res) => {
 });
 
 blogsRouter.post("/", userExtractor, async (req, res, next) => {
-  const user = req.user;
   try {
+    const user = req.user;
+    const session = await Session.findOne({
+      where: {
+        token: req.token,
+      },
+    });
+    if (user.disabled === true) {
+      return res.status(401).json({ error: "your account has been disabled" });
+    } else if (!session) {
+      return res.status(401).json({ error: "you need to login first" });
+    }
     const blog = await Blog.create({ ...req.body, userId: user.id });
     res.status(201).json(blog);
   } catch (error) {
