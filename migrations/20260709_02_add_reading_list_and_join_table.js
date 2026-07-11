@@ -8,11 +8,6 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
-      read: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -24,6 +19,11 @@ module.exports = {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+      },
+      read: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       blog_id: {
         type: DataTypes.INTEGER,
