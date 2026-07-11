@@ -77,6 +77,8 @@ const errorHandler = (error, _req, res, next) => {
     return res.status(400).json({ error: error.errors[0].message });
   } else if (error.name === "JsonWebTokenError") {
     return res.status(400).json({ error: "invalid token" });
+  } else if (error.name === "SequelizeForeignKeyConstraintError") {
+    return res.status(400).json({ error: error.message });
   } else {
     console.log(error);
     return res.status(400).json({ error: "unknown error" });
