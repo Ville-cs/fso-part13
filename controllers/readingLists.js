@@ -1,7 +1,7 @@
 const readingListRouter = require("express").Router();
-const { ReadingList, BlogsReadingLists, User, Blog } = require("../models");
+const { ReadingList, BlogReadingList, User, Blog } = require("../models");
 const { sequelize } = require("../util/db");
-const { userExtractor, sessionExtractor } = require("../util/middleware");
+const { userExtractor } = require("../util/middleware");
 
 readingListRouter.post("/", async (req, res, next) => {
   const body = req.body;
@@ -29,7 +29,7 @@ readingListRouter.post("/", async (req, res, next) => {
         { transaction: t },
       );
     }
-    const blogJoin = await BlogsReadingLists.create(
+    const blogJoin = await BlogReadingList.create(
       {
         blogId: body.blogId,
         readingListId: readingList.id,
@@ -62,7 +62,7 @@ readingListRouter.put("/:id", userExtractor, async (req, res, next) => {
     if (readingList.userId !== user.id) {
       return res.status(401).json({ error: "invalid user" });
     }
-    const joinTable = await BlogsReadingLists.findOne({
+    const joinTable = await BlogReadingList.findOne({
       where: {
         readingListId: req.params.id,
       },

@@ -2,7 +2,7 @@ const Blog = require("./blog");
 const User = require("./user");
 const Session = require("./session");
 const ReadingList = require("./reading_lists");
-const BlogsReadingLists = require("./blogs_reading_lists");
+const BlogReadingList = require("./blog_reading_list");
 
 User.hasOne(Session, {
   foreignKey: "userId",
@@ -26,11 +26,11 @@ Blog.belongsTo(User, {
 });
 
 Blog.belongsToMany(ReadingList, {
-  through: BlogsReadingLists,
+  through: BlogReadingList,
   foreignKey: "blogId",
 });
 ReadingList.belongsToMany(Blog, {
-  through: BlogsReadingLists,
+  through: BlogReadingList,
   foreignKey: "readingListId",
 });
 
@@ -39,5 +39,5 @@ module.exports = {
   User,
   Session,
   ReadingList,
-  BlogsReadingLists,
+  BlogReadingList,
 };
