@@ -1,7 +1,7 @@
 const readingListRouter = require("express").Router();
 const { ReadingList, BlogReadingList, User, Blog } = require("../models");
 const { sequelize } = require("../util/db");
-const { userExtractor } = require("../util/middleware");
+const { userExtractor, sessionExtractor } = require("../util/middleware");
 
 readingListRouter.post("/", async (req, res, next) => {
   const body = req.body;
@@ -40,6 +40,8 @@ readingListRouter.post("/", async (req, res, next) => {
       { transaction: t },
     );
     await readingList.addBlog(body.blogId, { transaction: t });
+    readingList.setDataValue("blog_id", body.blogId);
+    readingList.setDataValue("user_id", readingList.userId);
     await t.commit();
     res.status(201).json(readingList);
   } catch (error) {
@@ -48,22 +50,27 @@ readingListRouter.post("/", async (req, res, next) => {
   }
 });
 
-readingListRouter.put("/:id", userExtractor, async (req, res, next) => {
-  const user = req.user;
-  try {
-    const readingList = await ReadingList.findByPk(req.params.id);
-    if (!readingList) {
-      return res.status(404).json({ error: "reading list not found" });
+readingListRouter.put(
+  "/:id",
+  userExtractor,
+  sessionExtractor,
+  async (req, res, next) => {
+    const user = req.user;
+    try {
+      const readingList = await ReadingList.findByPk(req.params.id);
+      if (!readingList) {
+        return res.status(404).json({ error: "reading list not found" });
+      }
+      if (readingList.userId !== user.id) {
+        return res.status(401).json({ error: "invalid user" });
+      }
+      readingList.setDataValue("read", req.body.read);
+      readingList.save();
+      res.status(200).json(readingList);
+    } catch (error) {
+      next(error);
     }
-    if (readingList.userId !== user.id) {
-      return res.status(401).json({ error: "invalid user" });
-    }
-    readingList.setDataValue("read", req.body.read);
-    readingList.save();
-    res.status(200).json(readingList);
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 module.exports = readingListRouter;

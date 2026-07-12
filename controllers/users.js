@@ -46,29 +46,31 @@ usersRouter.get("/:id", async (req, res, next) => {
   }
   try {
     const user = await User.findByPk(req.params.id, {
-      attributes: { exclude: ["id", "createdAt", "updatedAt", "passwordHash"] },
-      include: [
-        {
-          model: Blog,
-          attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
-          include: {
-            model: ReadingList,
-            through: {
-              where,
-            },
+      attributes: { exclude: ["createdAt", "updatedAt", "passwordHash"] },
+      include: {
+        model: Blog,
+        attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
+        include: {
+          model: ReadingList,
+          where,
+          through: {
+            attributes: [],
           },
         },
-      ],
+      },
     });
+
     const toReturn = {
       name: user.name,
       username: user.username,
       readings: user.blogs.map((blog) => ({
-        ...blog.toJSON(),
-        reading_list: {
-          id: blog.reading_lists[0]?.id,
-          read: blog.reading_lists[0]?.blogs_reading_list.read,
-        },
+        id: blog.id,
+        url: blog.url,
+        title: blog.title,
+        author: blog.author,
+        likes: blog.likes,
+        year: blog.year,
+        reading_list: blog.reading_lists[0],
       })),
     };
     if (user) {
