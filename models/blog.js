@@ -34,6 +34,7 @@ Blog.init(
         max: currentYear,
         min: 1991,
       },
+      defaultValue: currentYear,
     },
   },
   {
