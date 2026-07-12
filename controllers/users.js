@@ -39,32 +39,45 @@ usersRouter.post("/", async (req, res, next) => {
   }
 });
 
-usersRouter.get("/:id", async (req, res) => {
+usersRouter.get("/:id", async (req, res, next) => {
   const where = {};
   if (req.query.read) {
     where.read = req.query.read;
   }
-  const user = await User.findByPk(req.params.id, {
-    attributes: { exclude: ["id", "createdAt", "updatedAt", "passwordHash"] },
-    include: [
-      {
-        model: Blog,
-        attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
-        include: {
-          model: ReadingList,
-          attributes: ["read", "id"],
-          through: {
-            attributes: [],
+  try {
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ["id", "createdAt", "updatedAt", "passwordHash"] },
+      include: [
+        {
+          model: Blog,
+          attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
+          include: {
+            model: ReadingList,
+            through: {
+              where,
+            },
           },
-          where,
         },
-      },
-    ],
-  });
-  if (user) {
-    res.json(user);
-  } else {
-    res.status(404).end();
+      ],
+    });
+    const toReturn = {
+      name: user.name,
+      username: user.username,
+      readings: user.blogs.map((blog) => ({
+        ...blog.toJSON(),
+        reading_list: {
+          id: blog.reading_lists[0]?.id,
+          read: blog.reading_lists[0]?.blogs_reading_list.read,
+        },
+      })),
+    };
+    if (user) {
+      res.json(toReturn);
+    } else {
+      res.status(404).end();
+    }
+  } catch (error) {
+    next(error);
   }
 });
 

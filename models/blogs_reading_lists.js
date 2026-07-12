@@ -15,12 +15,26 @@ BlogsReadingLists.init(
       allowNull: false,
       defaultValue: false,
     },
+    blogId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    readingListId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     sequelize,
     underscored: true,
     timestamps: false,
     modelName: "blogs_reading_list",
+    indexes: [
+      {
+        unique: true,
+        fields: ["blog_id", "reading_list_id"],
+      },
+    ],
   },
 );
 

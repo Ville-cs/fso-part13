@@ -11,7 +11,7 @@ Session.belongsTo(User, {
   foreignKey: "userId",
 });
 
-User.hasMany(ReadingList, {
+User.hasOne(ReadingList, {
   foreignKey: "userId",
 });
 ReadingList.belongsTo(User, {

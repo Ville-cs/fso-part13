@@ -36,8 +36,17 @@ module.exports = {
         references: { model: "reading_lists", key: "id" },
       },
     });
+    await queryInterface.addIndex("blogs_reading_lists", {
+      fields: ["blog_id", "reading_list_id"],
+      unique: true,
+      name: "unique_blog_reading_list",
+    });
   },
   down: async ({ context: queryInterface }) => {
+    await queryInterface.removeIndex(
+      "blogs_reading_lists",
+      "unique_blog_reading_list",
+    );
     await queryInterface.dropTable("blogs_reading_lists");
     await queryInterface.dropTable("reading_lists");
   },
