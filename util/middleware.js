@@ -32,6 +32,7 @@ const sessionExtractor = async (req, res, next) => {
       token: req.token,
     },
   });
+
   if (req.user.disabled === true) {
     return res.status(401).json({ error: "your account has been disabled" });
   } else if (!session) {
@@ -76,7 +77,7 @@ const errorHandler = (error, _req, res, next) => {
   } else if (error.name === "SequelizeUniqueConstraintError") {
     return res.status(400).json({ error: error.errors[0].message });
   } else if (error.name === "JsonWebTokenError") {
-    return res.status(400).json({ error: "invalid token" });
+    return res.status(401).json({ error: "invalid token" });
   } else if (error.name === "SequelizeForeignKeyConstraintError") {
     return res.status(400).json({ error: error.message });
   } else {
