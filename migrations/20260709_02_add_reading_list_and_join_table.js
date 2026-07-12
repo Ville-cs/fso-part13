@@ -8,22 +8,22 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      read: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: "users", key: "id" },
       },
     });
-    await queryInterface.createTable("blogs_reading_lists", {
+    await queryInterface.createTable("blog_reading_lists", {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-      },
-      read: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
       },
       blog_id: {
         type: DataTypes.INTEGER,
@@ -36,7 +36,7 @@ module.exports = {
         references: { model: "reading_lists", key: "id" },
       },
     });
-    await queryInterface.addIndex("blogs_reading_lists", {
+    await queryInterface.addIndex("blog_reading_lists", {
       fields: ["blog_id", "reading_list_id"],
       unique: true,
       name: "unique_blog_reading_list",
@@ -44,10 +44,10 @@ module.exports = {
   },
   down: async ({ context: queryInterface }) => {
     await queryInterface.removeIndex(
-      "blogs_reading_lists",
+      "blog_reading_lists",
       "unique_blog_reading_list",
     );
-    await queryInterface.dropTable("blogs_reading_lists");
+    await queryInterface.dropTable("blog_reading_lists");
     await queryInterface.dropTable("reading_lists");
   },
 };

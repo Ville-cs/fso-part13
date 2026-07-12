@@ -17,7 +17,6 @@ ReadingList.init(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true,
       references: { model: "users", key: "id" },
     },
   },

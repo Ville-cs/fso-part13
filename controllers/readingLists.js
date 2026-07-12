@@ -7,6 +7,23 @@ readingListRouter.post("/", async (req, res, next) => {
   const body = req.body;
   const t = await sequelize.transaction();
   try {
+    const duplicate = await BlogReadingList.findOne({
+      where: {
+        blogId: body.blogId,
+      },
+      include: {
+        model: ReadingList,
+        where: {
+          userId: body.userId,
+        },
+      },
+    });
+    if (duplicate) {
+      return res
+        .status(400)
+        .json({ error: "same blog cannot be added by same user twice" });
+    }
+
     if (!body.userId || !body.blogId) {
       return res
         .status(400)
@@ -18,34 +35,13 @@ readingListRouter.post("/", async (req, res, next) => {
       return res.status(404).json({ error: "user or blog not found" });
     }
 
-    let readingList = await ReadingList.findOne({
-      where: {
-        userId: body.userId,
-      },
-    });
-    if (!readingList) {
-      readingList = await ReadingList.create(
-        { userId: body.userId },
-        { transaction: t },
-      );
-    }
-    const blogJoin = await BlogReadingList.create(
-      {
-        blogId: body.blogId,
-        readingListId: readingList.id,
-      },
-      {
-        transaction: t,
-      },
+    const readingList = await ReadingList.create(
+      { userId: body.userId },
+      { transaction: t },
     );
-    const toReturn = {
-      id: readingList.id,
-      read: blogJoin.read,
-      user_id: readingList.userId,
-      blog_id: blogJoin.blogId,
-    };
+    await readingList.addBlog(body.blogId, { transaction: t });
     await t.commit();
-    res.status(201).json(toReturn);
+    res.status(201).json(readingList);
   } catch (error) {
     await t.rollback();
     next(error);
@@ -62,15 +58,8 @@ readingListRouter.put("/:id", userExtractor, async (req, res, next) => {
     if (readingList.userId !== user.id) {
       return res.status(401).json({ error: "invalid user" });
     }
-    const joinTable = await BlogReadingList.findOne({
-      where: {
-        readingListId: req.params.id,
-      },
-    });
-    joinTable.read = req.body.read;
-    joinTable.save();
-
-    readingList.setDataValue("read", joinTable.read);
+    readingList.setDataValue("read", req.body.read);
+    readingList.save();
     res.status(200).json(readingList);
   } catch (error) {
     next(error);
