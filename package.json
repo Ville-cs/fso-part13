@@ -11,7 +11,7 @@
     "dev": "nodemon index.js",
     "test": "TESTING=true node --test --test-concurrency=1",
     "test2": "TESTING=true node --test --test-concurrency=1 tests/api_ch4.test.js",
-    "start:test": "TESTING=true node index.js",
+    "start:test": "TESTING=true nodemon index.js",
     "migration:down": "node util/rollback.js"
   },
   "dependencies": {
