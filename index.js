@@ -1,6 +1,7 @@
 const express = require("express");
 const middleware = require("./util/middleware");
 const app = express();
+const morgan = require("morgan");
 
 const { PORT } = require("./util/config");
 const { connectToDatabase } = require("./util/db");
@@ -16,6 +17,16 @@ const resetRouter = require("./controllers/reset");
 const { unknownEndpoint, errorHandler } = require("./util/middleware");
 
 app.use(express.json());
+
+morgan.token("body", (req) => {
+  return JSON.stringify(req.body);
+});
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :body ",
+  ),
+);
+
 app.use(middleware.tokenExtractor);
 
 app.get("/", (_, res) => res.sendStatus(200));
